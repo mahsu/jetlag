@@ -36,6 +36,10 @@ const addNewTzSelector = () => {
 class CalSettingsObserver {
 
     constructor() {
+        chrome.storage.sync.get(['tertiaryTz'], ({ tertiaryTz }) => {
+            this.savedTz = tertiaryTz;
+        })
+
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
         this.observer = new MutationObserver((mutations, observer) => {

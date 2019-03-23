@@ -1,5 +1,4 @@
 const MAX_TIMEZONES = 3;
-const DESIRED_TZ = "GMT";
 const dt = luxon.DateTime.local();
 
 var calBody, tzTimesContainer, calHeader, hiddenTzHeader, visibleTzHeader;
@@ -34,8 +33,8 @@ const formatAmPm = (hour) => {
     return `${hour - 12} PM`
 }
 
-const getTzOffset = () => {
-    const newTz = dt.setZone(DESIRED_TZ).offset;
+const getTzOffset = (desiredTz) => {
+    const newTz = dt.setZone(desiredTz).offset;
     const label = `GMT-${(newTz / 60).toString().padStart(2, "0")}`;
     const localOffset = (newTz - dt.offset) / 60;
     return {
@@ -68,8 +67,8 @@ const setTzTimes = (offsetData) => {
     tzTimesContainer.insertBefore(newTz, secondaryTzTimes);
 }
 
-const addTzSidebar = () => {
-    const offsetData = getTzOffset();
+const addTzSidebar = (desiredTz) => {
+    const offsetData = getTzOffset(desiredTz);
     setTzHeader(offsetData);
     setTzTimes(offsetData);
 }
@@ -77,13 +76,15 @@ const addTzSidebar = () => {
 class CalPageOberver {
 
     constructor() {
+        chrome.storage.sync.get(['tertiaryTz'], ({ tertiaryTz }) => {
+            this.savedTz = tertiaryTz;
+        })
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
         this.observer = new MutationObserver((mutations, observer) => {
             initRefs();
-
             if (tzCount() < MAX_TIMEZONES) {
-                addTzSidebar();
+                addTzSidebar(this.savedTz);
             }
         });
     }
