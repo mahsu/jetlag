@@ -74,23 +74,30 @@ const addTzSidebar = () => {
     setTzTimes(offsetData);
 }
 
-MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+class CalPageOberver {
 
+    constructor() {
+        MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
-var observer = new MutationObserver(function (mutations, observer) {
-    // fired when a mutation occurs
-    console.log(mutations, observer);
+        this.observer = new MutationObserver((mutations, observer) => {
+            initRefs();
 
-    initRefs();
-
-    if (tzCount() < MAX_TIMEZONES) {
-        addTzSidebar();
+            if (tzCount() < MAX_TIMEZONES) {
+                addTzSidebar();
+            }
+        });
     }
-});
 
-// define what element should be observed by the observer
-// and what types of mutations trigger the callback
-observer.observe(document, {
-    subtree: true,
-    attributes: true,
-});  
+    start() {
+        // define what element should be observed by the observer
+        // and what types of mutations trigger the callback
+        this.observer.observe(document, {
+            subtree: true,
+            attributes: true,
+        });
+    }
+
+    stop() {
+        this.observer.disconnect();
+    }
+} 

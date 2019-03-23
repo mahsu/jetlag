@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "description": "Calendar utilities",
     "permissions": [
-        "activeTab",
+        "tabs",
         "declarativeContent",
         "storage"
     ],
@@ -16,11 +16,13 @@
     "content_scripts": [
         {
             "matches": [
-                "https://calendar.google.com/*"
+                "https://calendar.google.com/calendar/*"
             ],
             "js": [
                 "luxon.min.js",
-                "cal.js"
+                "cal.js",
+                "cal_settings.js",
+                "routes.js"
             ]
         }
     ],
