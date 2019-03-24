@@ -7,29 +7,62 @@ const tzSelectorCount = () => {
     return document.querySelector(calTzSelectorContainerName).childNodes.length;
 }
 
-const getSelectedTz = () => {
-    const selected = document.querySelector(`${tertiaryCalTzSelectorId} ${calSelectedOptionClass}`);
-    if (!selected) {
-        return null;
+const getTzFromOption = (opt) => {
+    let tzName = opt.getAttribute("data-value");
+    if (!tzName) {
+        return ""
     }
-    let tzName = selected.getAttribute("data-value");
     if (tzName.includes("suggestion:")) {
         tzName = tzName.split(":")[1];
     }
+    return tzName;
+}
+
+const getSelectedTz = () => {
+    const selectedOption = document.querySelector(`${tertiaryCalTzSelectorId} ${calSelectedOptionClass}`);
+    if (!selectedOption) {
+        return null;
+    }
+    const tzName = getTzFromOption(selectedOption);
     return {
-        label: selected.lastChild.textContent,
+        label: selectedOption.lastChild.textContent,
         tzName
     }
 }
 
-const addNewTzSelector = () => {
+const setSelectedTz = (calNode, desiredTz) => {
+    const optionsList = calNode.querySelector(`.ry3kXd`);
+    const selectedClassName = calSelectedOptionClass.substring("1");
+    const childNodes = Array.from(optionsList.childNodes);
+    childNodes.some(opt => {
+        if (opt.classList.contains(selectedClassName)) {
+            opt.classList.remove(selectedClassName);
+            opt.setAttribute("aria-selected", false);
+            opt.setAttribute("tab-index", -1);
+            return true;
+        }
+    })
+    childNodes.some(opt => {
+        if (getTzFromOption(opt) === desiredTz) {
+            opt.classList.add(selectedClassName);
+            opt.setAttribute("aria-selected", true);
+            opt.setAttribute("tab-index", 0);
+            return true;
+        }
+    })
+}
+
+const addNewTzSelector = (desiredTz) => {
     const calTzSelector = document.querySelector(calTzSelectorName);
     const newCalTzSelector = calTzSelector.cloneNode(true);
     newCalTzSelector.style.margin = "8px 0 0 0";
     newCalTzSelector.querySelector(".LGMdbc").textContent = "Tertiary time zone";
     newCalTzSelector.id = tertiaryCalTzSelectorId.substring(1);
+
     // Clear angular binding
     newCalTzSelector.querySelector(".nDQJrc div").setAttribute("jscontroller", "");
+
+    setSelectedTz(newCalTzSelector, desiredTz);
     document.querySelector(calTzSelectorContainerName).appendChild(newCalTzSelector);
 }
 
@@ -38,7 +71,7 @@ class CalSettingsObserver {
     constructor() {
         chrome.storage.sync.get(['tertiaryTz'], ({ tertiaryTz }) => {
             this.savedTz = tertiaryTz;
-        })
+        });
 
         MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 
@@ -48,21 +81,24 @@ class CalSettingsObserver {
                 return;
             }
             if (tzSelectorCount() < MAX_TIMEZONES) {
-                addNewTzSelector();
+                if (this.savedTz) {
+                    addNewTzSelector(this.savedTz);
+                }
             }
-            console.log(getSelectedTz());
+            const { tzName } = getSelectedTz();
+            if (tzName && tzName !== this.savedTz) {
+                chrome.storage.sync.set({ tertiaryTz: tzName });
+            }
         });
     }
 
     start() {
-
-        // define what element should be observed by the observer
-        // and what types of mutations trigger the callback
         this.observer.observe(document, {
             subtree: true,
             attributes: true,
         });
     }
+
 
     stop() {
         this.observer.disconnect();
