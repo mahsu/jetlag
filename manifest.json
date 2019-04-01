@@ -1,7 +1,10 @@
 {
     "name": "Jetlag",
     "version": "0.0.1",
-    "description": "Calendar utilities",
+    "description": "Calendar utilities for distributed humans",
+    "icons": {
+        "128": "icon-128.png"
+    },
     "permissions": [
         "tabs",
         "declarativeContent",
