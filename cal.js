@@ -35,7 +35,9 @@ const formatAmPm = (hour) => {
 
 const getTzOffset = (desiredTz) => {
     const newTz = dt.setZone(desiredTz).offset;
-    const label = `GMT-${(newTz / 60).toString().padStart(2, "0")}`;
+    const newOffset = newTz / 60;
+    const sign = Math.sign(newOffset) === -1 ? "-" : "+";
+    const label = `GMT${sign}${Math.abs(newOffset).toString().padStart(2, "0")}`;
     const localOffset = (newTz - dt.offset) / 60;
     return {
         localOffset,
@@ -92,6 +94,7 @@ class CalPageOberver {
     start() {
         // define what element should be observed by the observer
         // and what types of mutations trigger the callback
+
         this.observer.observe(document, {
             subtree: true,
             attributes: true,
