@@ -85,7 +85,9 @@ class CalPageOberver {
 
         this.observer = new MutationObserver((mutations, observer) => {
             initRefs();
-            if (tzCount() < MAX_TIMEZONES) {
+            const numTimezones = tzCount();
+            const secondaryTimezoneEnabled = (numTimezones === 2);
+            if (numTimezones < MAX_TIMEZONES && secondaryTimezoneEnabled) {
                 addTzSidebar(this.savedTz);
             }
         });
